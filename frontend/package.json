@@ -25,6 +25,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build:css": "postcss src/styles/main.css -o src/index.css --env production",
+    "watch:css": "postcss src/styles/main.css -o src/index.css -w",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
