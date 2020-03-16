@@ -14,6 +14,14 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
+  accessToken: {
+    type: String,
+    required: false
+  },
+  refreshToken: {
+    type: String,
+    required: false
+  },
   date: {
     type: Date,
     default: Date.now
