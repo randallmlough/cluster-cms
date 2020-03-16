@@ -5,28 +5,30 @@ import { Link, NavLink } from "react-router-dom";
 import { mainMenu } from "../../menus";
 const Navbar = props => {
   return (
-    <header className="bg-secondary-500">
-      <div className="max-w-6xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div className="relative flex items-center justify-between h-16">
+    <header className="bg-black-500">
+      <div>
+        <div className="relative flex items-stretch justify-between">
           {/* MOBILE MENU TO GO HERE AT SOME POINT */}
           <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
             <div className="flex-shrink-0">
-              <Link to="/">
-                <Mark className="block lg:hidden h-8 w-auto" />
-                <Logo className="hidden lg:block h-8 w-auto" />
+              <Link
+                to="/"
+                className="flex h-full px-3 hover:bg-black-600 items-center"
+              >
+                <Mark className="block h-10 w-auto fill-current text-primary-500" />
               </Link>
             </div>
-            <div className="hidden sm:block sm:ml-6">
-              <nav className="flex">
-                <ul>
+            <div className="hidden sm:block">
+              <nav className="h-full">
+                <ul className="flex h-full items-stretch">
                   {Object.values(mainMenu).map((menuItem, idx) => (
-                    <li>
+                    <li className="flex items-stretch">
                       <NavLink
                         key={idx}
                         exact
                         to={menuItem.path}
-                        className=""
-                        activeClassName=""
+                        className="font-thin hover:bg-black-600 px-3 py-4 text-sm text-white"
+                        activeClassName="bg-black-600"
                       >
                         {menuItem.text}
                       </NavLink>
