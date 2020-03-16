@@ -4,25 +4,59 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        secondary: { ...colors.orange, default: colors.orange[500] },
-        secondary: { ...colors.gray, default: colors.blue[500] },
+        primary: {
+          100: "#ffe4de",
+          200: "#ffcabd",
+          300: "#ffaf9b",
+          400: "#ff957a",
+          500: "#FF7A59", // main
+          600: "#cc6247",
+          700: "#994935",
+          800: "#663124",
+          900: "#331812"
+        },
+        secondary: {
+          100: "#ccedf2",
+          200: "#99dbe5",
+          300: "#66c8d7",
+          400: "#33b6ca",
+          500: "#00a4bd", // secondary
+          600: "#008397",
+          700: "#006271",
+          800: "#00424c",
+          900: "#002126"
+        },
+        // gray: {
+        //   100: "#d5d9dc",
+        //   200: "#acb2b9",
+        //   300: "#828c96",
+        //   400: "#596573",
+        //   500: "#2f3f50", // secondary
+        //   600: "#263240",
+        //   700: "#1c2630",
+        //   800: "#131920",
+        //   900: "#090d10"
+        // },
+        black: {
+          default: colors.black,
+          100: "#d5d9dc",
+          200: "#acb2b9",
+          300: "#828c96",
+          400: "#596573",
+          500: "#2f3f50", // secondary
+          600: "#263240",
+          700: "#1c2630",
+          800: "#131920",
+          900: "#090d10"
+        },
         success: {
-          ...colors.green,
-          light: colors.green[300],
-          default: colors.green[500],
-          dark: colors.green[700]
+          ...colors.green
         },
         danger: {
-          ...colors.red,
-          light: colors.red[300],
-          default: colors.red[500],
-          dark: colors.red[700]
+          ...colors.red
         },
         info: {
-          ...colors.blue,
-          light: colors.blue[300],
-          default: colors.blue[500],
-          dark: colors.blue[700]
+          ...colors.blue
         }
       }
     }
