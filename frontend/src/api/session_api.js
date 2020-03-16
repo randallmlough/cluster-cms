@@ -1,5 +1,5 @@
 import API from ".";
-const sessionAPI = new API("");
+const sessionAPI = new API("/users");
 
 export const registerUser = async user =>
   await sessionAPI.post("/register", user);

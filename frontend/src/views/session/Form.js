@@ -27,7 +27,7 @@ export default function SessionForm(props) {
             type="text"
             className="bg-gray-100 block border border-gray-400 px-2 py-2 rounded-sm w-full"
             value={user.email}
-            onChange={e => setUser(e.target.value)}
+            onChange={e => setUser({ ...user, email: e.target.value })}
           />
         </label>
       </div>
@@ -38,7 +38,7 @@ export default function SessionForm(props) {
             type="password"
             className="bg-gray-100 block border border-gray-400 px-2 py-2 rounded-sm w-full"
             value={user.password}
-            onChange={e => setUser(e.target.value)}
+            onChange={e => setUser({ ...user, password: e.target.value })}
           />
         </label>
       </div>

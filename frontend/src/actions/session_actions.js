@@ -11,7 +11,7 @@ const removeUserSession = () => ({
   type: actions.REMOVE_USER_SESSION
 });
 
-export const registerUserAction = async user => async dispatch => {
+export const registerUserAction = user => async dispatch => {
   return await registerUser(user)
     .then(resp => {
       const session = decodeJWT(resp.data.token);
@@ -21,7 +21,7 @@ export const registerUserAction = async user => async dispatch => {
     .catch(error => Promise.reject(formatError(error)));
 };
 
-export const authenticateUserAction = async ({
+export const authenticateUserAction = ({
   email,
   password
 }) => async dispatch => {
