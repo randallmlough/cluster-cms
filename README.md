@@ -37,9 +37,12 @@ Cluster will be built using Express and MongoDB for server and database solution
   - "index" page -- collection of all contacts for user
   - "show" page -- central focal point for the app. collection of emails related to contact
 
-- Gmail Integration
-  - backend -- API implementation
-  - frontend -- "emails" tab in contact "show" page
+- Gmail Integration Backend
+  - Gmail API implementation
+  - Google Cloud App Engine Cron Service integration, for scheduling of future emails
+
+- Gmail Integration Frontend
+  - "emails" tab in contact "show" page
 
 
 # Design Inspo
