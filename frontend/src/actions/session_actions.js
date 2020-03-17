@@ -1,6 +1,10 @@
 import { actions } from "./index";
 import { registerUser, authenticateUser, formatError } from "../api";
-import { saveSessionToken, decodeJWT } from "../utils/session";
+import {
+  saveSessionToken,
+  decodeJWT,
+  deleteSessionToken
+} from "../utils/session";
 
 const receiveUserSession = user => ({
   type: actions.RECEIVE_USER_SESSION,
@@ -34,5 +38,7 @@ export const authenticateUserAction = ({
     .catch(error => Promise.reject(formatError(error)));
 };
 
-export const removeUserSessionAction = () => dispatch =>
+export const removeUserSessionAction = () => dispatch => {
   dispatch(removeUserSession());
+  deleteSessionToken();
+};

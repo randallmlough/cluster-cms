@@ -1,9 +1,20 @@
 import React from "react";
 import { ReactComponent as Mark } from "./mark.svg";
-import { ReactComponent as Logo } from "./logo.svg";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useHistory } from "react-router-dom";
 import { mainMenu } from "../../menus";
+import UserMenuDropdown from "./UserMenuDropdown";
+import Menu from "./Menu";
+import { removeUserSessionAction } from "../../actions";
+import { connect } from "react-redux";
+import "./Navbar.css";
+
 const Navbar = props => {
+  const { removeSession } = props;
+
+  const handleLogout = e => {
+    e.preventDefault();
+    removeSession();
+  };
   return (
     <header className="bg-black-500">
       <div>
@@ -20,22 +31,23 @@ const Navbar = props => {
             </div>
             <div className="hidden sm:block">
               <nav className="h-full">
-                <ul className="flex h-full items-stretch">
-                  {Object.values(mainMenu).map((menuItem, idx) => (
-                    <li className="flex items-stretch">
-                      <NavLink
-                        key={idx}
-                        exact
-                        to={menuItem.path}
-                        className="font-thin hover:bg-black-600 px-3 py-4 text-sm text-white"
-                        activeClassName="bg-black-600"
-                      >
-                        {menuItem.text}
-                      </NavLink>
-                    </li>
-                  ))}
-                </ul>
+                <Menu menu={mainMenu} />
               </nav>
+            </div>
+            <div className="flex ml-auto">
+              <div className="bg-gray-100 h-8 mx-3 opacity-25 self-center w-px"></div>
+              <div className="h-full">
+                <UserMenuDropdown>
+                  <div className="bg-white border border-gray-400 p-3 rounded w-64">
+                    <button
+                      className="text-secondary-500 hover:text-secondary-700"
+                      onClick={handleLogout}
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </UserMenuDropdown>
+              </div>
             </div>
           </div>
         </div>
@@ -44,4 +56,8 @@ const Navbar = props => {
   );
 };
 
-export default Navbar;
+const mapDispatchToProps = dispatch => ({
+  removeSession: () => dispatch(removeUserSessionAction())
+});
+
+export default connect(null, mapDispatchToProps)(Navbar);
