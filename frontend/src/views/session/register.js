@@ -6,9 +6,14 @@ import { registerUserAction, authenticateUserAction } from "../../actions";
 import { ReactComponent as Logo } from "./logo.svg";
 import googleLogo from "./google-logo.webp";
 import SessionForm from "./Form";
+import { fetchOAuthUrl, redirectToGoogle } from '../../utils/oauth';
 
 export default function RegisterView(props) {
   const { isAuthenticated, submit } = props;
+  let url = undefined;
+
+  fetchOAuthUrl()
+    .then((res) => url = res.data.url);
 
   if (isAuthenticated) {
     return <Redirect to="/" />;
@@ -27,15 +32,17 @@ export default function RegisterView(props) {
           </div>
           <SessionForm submit={submit} register />
           <hr className="bg-gray-100 my-5 h-px" />
-          <button
+          <a
             className="block w-full border flex rounded-sm text-white"
             style={{ backgroundColor: "#5886d4", borderColor: "#5886d4" }}
+            onClick={e => redirectToGoogle(e, url)}
+            href=""
           >
             <div className="bg-white flex font-black items-center px-2 self-stretch text-2xl text-gray-800">
               <img src={googleLogo} alt="Google's logo" className="h-6" />
             </div>
-            <div className="flex-1 py-2 text-sm">Sign up with Google</div>
-          </button>
+            <div className="flex-1 py-2 text-sm text-center">Sign up with Google</div>
+          </a>
         </div>
       </div>
     </div>

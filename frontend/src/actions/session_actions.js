@@ -6,7 +6,7 @@ import {
   deleteSessionToken
 } from "../utils/session";
 
-const receiveUserSession = user => ({
+export const receiveUserSession = user => ({
   type: actions.RECEIVE_USER_SESSION,
   user
 });
