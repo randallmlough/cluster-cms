@@ -20,7 +20,7 @@ export const AppView = props => {
 };
 
 const PrivateRouteComp = props => {
-  const { isAuthenticated, ...rest } = props;
+  const { isAuthenticated, component: Component, ...rest } = props;
   return (
     <Route
       {...rest}
@@ -31,8 +31,10 @@ const PrivateRouteComp = props => {
   );
 };
 
-const mapStateToProps = state => ({
-  isAuthenticated: state.session && state.session.isAuthenticated
-});
+const mapStateToProps = state => {
+  return {
+    isAuthenticated: state.session && state.session.isAuthenticated
+  };
+};
 
 const PrivateRoute = connect(mapStateToProps)(PrivateRouteComp);
