@@ -12,7 +12,6 @@ const validateLoginInput = require('../../validation/login');
 router.get('/current', passport.authenticate('jwt', {session: false}), (req, res) => {
   res.json({
     id: req.user.id,
-    handle: req.user.handle,
     email: req.user.email
   });
 })
@@ -43,8 +42,14 @@ router.post('/register', (req, res) => {
             if (err) throw err;
             newUser.password = hash;
             newUser.save()
-              .then(user => {
-                res.json(user)
+              .then(response => {
+                let user = {
+                  id: response._id,
+                  email: response.email
+                }
+
+                user.token = jwt.sign(user, keys.secretOrKey, {expiresIn: 3600});
+                res.json(user);
               })
               .catch(err => console.log(err));
           })
@@ -74,7 +79,7 @@ router.post('/login', (req, res) => {
       bcrypt.compare(password, user.password)
         .then(isMatch => {
           if (isMatch) {
-            const payload = {id: user.id, name: user.handle};
+            const payload = {id: user.id, email: user.email};
 
             jwt.sign(
               payload,

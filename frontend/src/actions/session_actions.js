@@ -22,7 +22,9 @@ export const registerUserAction = user => async dispatch => {
       dispatch(receiveUserSession(session));
       saveSessionToken(resp.data.token);
     })
-    .catch(error => Promise.reject(formatError(error)));
+    .catch(error => {
+      Promise.reject(formatError(error))
+    });
 };
 
 export const authenticateUserAction = ({
