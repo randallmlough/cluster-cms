@@ -6,5 +6,6 @@ export const actions = {
 export {
   registerUserAction,
   authenticateUserAction,
-  removeUserSessionAction
+  removeUserSessionAction,
+  receiveUserSession
 } from "./session_actions";
