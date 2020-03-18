@@ -30,7 +30,6 @@ export default class API {
   async request(method, url, data) {
     return await axios({
       baseURL: this.baseURL,
-      headers: { Authorization: `Bearer ${getSessionToken()}` },
       transformResponse: [
         ...axios.defaults.transformResponse,
         data => humps.camelizeKeys(data)
@@ -43,6 +42,7 @@ export default class API {
       url: this.baseResource + url,
       data: data,
       headers: {
+        Authorization: `Bearer ${getSessionToken()}`,
         "content-type": "application/json"
       }
     });
