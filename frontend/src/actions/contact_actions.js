@@ -1,6 +1,12 @@
-import { actions } from "./index"
-import { fetchContacts, fetchContact, newContact,
-  changeContact, delContact, formatError } from '../api';
+import { actions } from "./index";
+import {
+  fetchContacts,
+  fetchContact,
+  newContact,
+  changeContact,
+  delContact,
+  formatError
+} from "../api";
 
 const receiveContacts = contacts => ({
   type: actions.RECEIVE_CONTACTS,
@@ -15,7 +21,7 @@ const receiveContact = contact => ({
 const receiveContactErrors = errors => ({
   type: actions.RECEIVE_CONTACT_ERRORS,
   errors
-})
+});
 
 const removeContact = id => ({
   type: actions.REMOVE_CONTACT,
@@ -24,25 +30,25 @@ const removeContact = id => ({
 
 export const getContacts = () => async dispatch =>
   await fetchContacts()
-    .then(contacts => dispatch(receiveContacts(contacts)))
+    .then(resp => dispatch(receiveContacts(resp.data)))
     .catch(err => Promise.reject(formatError(err)));
 
 export const getContact = id => async dispatch =>
   await fetchContact(id)
-    .then(contact => dispatch(receiveContact(contact)))
+    .then(resp => dispatch(receiveContact(resp.data)))
     .catch(err => Promise.reject(formatError(err)));
 
-export const createContact = contact => async dispatch => 
+export const createContact = contact => async dispatch =>
   await newContact(contact)
-    .then(contact => dispatch(receiveContact(contact)))
+    .then(resp => dispatch(receiveContact(resp.data)))
     .catch(err => receiveContactErrors(err));
 
-export const updateContact = contact => async dispatch => 
+export const updateContact = contact => async dispatch =>
   await changeContact(contact)
-    .then(contact => dispatch(receiveContact(contact)))
+    .then(resp => dispatch(receiveContact(resp.data)))
     .catch(err => receiveContactErrors(err));
 
-export const deleteContact = contact => async dispatch => 
+export const deleteContact = contact => async dispatch =>
   await delContact(contact)
-    .then(res => dispatch(removeContact(contact.id)))
+    .then(() => dispatch(removeContact(contact.id)))
     .catch(err => Promise.reject(formatError(err)));
