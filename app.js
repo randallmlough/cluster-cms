@@ -8,6 +8,7 @@ const passport = require('passport');
 
 const users = require("./backend/routes/api/users");
 const oauth = require("./backend/routes/api/oauth");
+const contacts = require("./backend/routes/api/contacts");
 
 mongoose
   .connect(uri, { useNewUrlParser: true })
@@ -24,6 +25,7 @@ app.use(bodyParser.json());
 
 app.use("/api/users", users);
 app.use("/api/oauth", oauth);
+app.use("/api/contacts", contacts)
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Server is running on port ${port}`));

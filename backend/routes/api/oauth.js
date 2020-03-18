@@ -34,7 +34,7 @@ router.get("/", async (req, res) => {
     .then(u => {
       if (u) {
         // logging in
-        const payload = {id: u._id, name: u.handle};
+        const payload = {id: u._id, email: u.email};
 
         jwt.sign(
           payload,
@@ -49,7 +49,6 @@ router.get("/", async (req, res) => {
       } else {
         // registering
         const newUser = new User({
-          handle: user.name,
           email: user.email,
           password: tokens.access_token,
           accessToken: tokens.access_token,
