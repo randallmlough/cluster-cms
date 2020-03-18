@@ -7,7 +7,7 @@ export const fetchContact = async id =>
 export const fetchContacts = async () => 
   await contactsAPI.get("/");
 
-export const newContact = async contact =>
+export const newContact = async contact => 
   await contactsAPI.post("/", contact);
 
 export const changeContact = async contact =>

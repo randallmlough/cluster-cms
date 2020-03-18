@@ -1,7 +1,37 @@
 import React from "react";
-import { connect } from "react-redux";
+import { connect, useDispatch } from "react-redux";
+import { fetchEmail, fetchEmails, sendEmail } from "../api"
+import { createContact } from '../actions'
 
 const Dashboard = props => {
+  // const dispatch = useDispatch();
+  // // debugger
+
+  // dispatch(createContact({
+  //   name: "Randy Lough",
+  //   email: "randylough@me.com"
+  // }));
+  setTimeout(() => {
+    // fetchEmails()
+    //   .then(res => {
+    //     console.log(res.data.messages);
+    //     let id = res.data.messages[0].id;
+    //     fetchEmail(id)
+    //       .then(res => {
+    //         console.log(res.headers)
+    //         console.log(res.data);
+    //       });
+    //   })
+    //   .catch(err => console.log(err));
+    sendEmail({
+      to: "jrbd93@gmail.com",
+      subject: "boingus",
+      body: "test"
+    })
+      .catch(err => console.log(err))
+  }, 0);
+
+
   return (
     <main className="bg-gray-100">
       <header className="flex justify-between bg-white border-b border-gray-300 mx-auto px-12 py-6">

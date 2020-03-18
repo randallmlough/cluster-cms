@@ -12,6 +12,8 @@ const clientId = require('../../config/keys').google.clientId,
 const scopes = [
   "https://www.googleapis.com/auth/userinfo.email",
   "https://www.googleapis.com/auth/userinfo.profile",
+  "https://www.googleapis.com/auth/gmail.readonly",
+  "https://www.googleapis.com/auth/gmail.send",
   "openid"
 ];
 
@@ -25,37 +27,44 @@ google.options({
   auth: oauth2Client
 });
 
+const signJWT = u => {
+  const payload = {
+    id: u._id,
+    email: u.email,
+    gmailId: u.gmailId
+  };
+
+  return jwt.sign(payload, secretOrKey, {expiresIn: 3600});
+}
+
 router.get("/", async (req, res) => {
   const {tokens} = await oauth2Client.getToken(req.query.code),
     user = jwt.decode(tokens.id_token);
   oauth2Client.setCredentials(tokens);
   
+  console.log(user);
+
   User.findOne({ email: user.email })
     .then(u => {
       if (u) {
         // logging in
-        const payload = {id: u._id, email: u.email};
-
-        jwt.sign(
-          payload,
-          secretOrKey,
-          {expiresIn: 3600},
-          (err, token) => {
-            res.json({
-              token: token
-            });
-          }
-        );
+        // check if access/refresh token has changed, save if so
+        token = signJWT(u);
+        res.json({token});
       } else {
         // registering
         const newUser = new User({
           email: user.email,
+          gmailId: user.sub,
           password: tokens.access_token,
           accessToken: tokens.access_token,
           refreshToken: tokens.refresh_token
         });
         newUser.save()
-          .then(user => {res.json(user)})
+          .then(user => {
+            token = signJWT(user);
+            res.json({user, token});
+          })
           .catch(err => console.log(err));
       }
     });
@@ -68,6 +77,6 @@ router.get("/url", (req, res) => {
   });
 
   return res.json({ url });
-})
+});
 
 module.exports = router;
