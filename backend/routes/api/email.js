@@ -1,9 +1,11 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 const {google} = require('googleapis');
 const passport = require('passport');
 const Contact = require('../../models/Contact');
 const MailComposer = require("nodemailer/lib/mail-composer");
+
+const validateEmailInput = require('../../validation/email');
 
 const clientId = require('../../config/keys').google.clientId,
   clientSecret = require('../../config/keys').google.clientSecret,
@@ -105,6 +107,9 @@ router.get("/:id",
 
 router.post("/",
   (req, res) => {
+    const { errors, isValid } = validateEmailInput(req.body);
+    if (!isValid) return res.status(400).json(errors);
+
     const mailOptions = {
       to: req.body.email.to,
       subject: req.body.email.subject,
@@ -116,14 +121,14 @@ router.post("/",
       };
 
     mail.compile().build((err,msg) => {
-      params.body = msg.toString("base64");
-      // console.log(msg.toString("base64"));
+      if (err) return console.log(err);
+      params.resource = {raw: msg.toString("base64")};
+      
       const gmail = google.gmail({version: "v1", oauth2Client});
       gmail.users.messages.send(params, (err, gRes) => {
         if (err) return console.log(err);
-        console.log("ok")
-        console.log(gRes);
-      })
+        res.json({msg: "ok"});
+      });
     });
   }
 );

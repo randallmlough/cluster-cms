@@ -8,11 +8,11 @@ export const fetchEmails = async args => {
   const path = "/?";
   if (args) {
     for (let p of args) {
-      path += `${p}=${args[p]}`
+      path += `${p}=${args[p]}&`
     }
   }
   return await emailAPI.get(path);
 }
 
 export const sendEmail = async email =>
-  await emailAPI.post("/", {email});
+  await emailAPI.post("/", email);
