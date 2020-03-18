@@ -25,4 +25,5 @@ yarn-error.log*
 .history/
 
 # secrets
-backend/config/keys.json
+keys.json
+keys.js
