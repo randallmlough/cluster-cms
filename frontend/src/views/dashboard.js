@@ -1,7 +1,11 @@
 import React from "react";
-import { connect } from "react-redux";
+import { connect, useDispatch } from "react-redux";
+import { getEmails } from "../actions"
 
 const Dashboard = props => {
+  const dispatch = useDispatch();
+  dispatch(getEmails({q:"from:me"}))
+
   return (
     <main className="bg-gray-100">
       <header className="flex justify-between bg-white border-b border-gray-300 mx-auto px-12 py-6">

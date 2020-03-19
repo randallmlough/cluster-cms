@@ -10,6 +10,10 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
+  gmailId: {
+    type: String,
+    required: false
+  },
   accessToken: {
     type: String,
     required: false
