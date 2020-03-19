@@ -25,8 +25,9 @@ export const getEmails = args => async dispatch =>
   await fetchEmails(args)
     .then(resp => {
       resp.data.forEach(e => {
-        fetchEmail(e.id)
-          .then(email => dispatch(receiveEmail(email.data)));
+        dispatch(getEmail(e.id));
+        // fetchEmail(e.id)
+        //   .then(email => dispatch(receiveEmail(email.data)));
       });
       dispatch(receiveEmails(resp.data));
     })
@@ -35,7 +36,7 @@ export const getEmails = args => async dispatch =>
 export const getEmail = id => async dispatch =>
   await fetchEmail(id)
     .then(resp => dispatch(receiveEmail(resp.data)))
-    .catch(err => Promise.reject(formatError(err)));
+    .catch(err => {if (err.response.status === 400) dispatch(getEmail(id))});
 
 export const createEmail = email => async dispatch =>
   await sendEmail(email)

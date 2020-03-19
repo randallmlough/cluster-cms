@@ -30,7 +30,40 @@ const parseGData = gRes => {
   } else {
     parseGParts(gRes.data.payload.parts);
   }
+  
+  data = {};
 
+  data.id = gRes.data.id;
+
+  gRes.data.payload.headers
+    .filter(h => (
+    ["Date", "From", "To", "Subject"].includes(h.name)
+  )).forEach(h => {
+    data[h.name.toLowerCase()] = h.value;
+  });
+
+  data.labels = gRes.data.labelIds;
+
+  switch (gRes.data.payload.mimeType) {
+    case "text/plain":
+      data.body = gRes.data.payload.body.data;
+      break;
+    case "multipart/mixed":
+    case "multipart/related":
+      gRes.data.payload.parts[0].parts &&
+        (data.body = gRes.data.payload.parts[0].parts[0].body.data,
+        data.formattedBody = gRes.data.payload.parts[0].parts[1].body.data)
+      break;
+    case "multipart/alternative":
+      data.body = gRes.data.payload.parts[0].body.data;
+      data.formattedBody = gRes.data.payload.parts[1].body.data;
+      break;
+    default:
+      console.log(`ERROR: Unknown type ${gRes.data.payload.mimeType}`);
+      break;
+  }
+
+  gRes.data = data;
   return gRes;
 };
 
@@ -111,7 +144,7 @@ router.get("/:id",
 
     const gmail = google.gmail({version: "v1", oauth2Client});
     gmail.users.messages.get(params, (err, gRes) => {
-      if (err) return console.log(err);
+      if (err) return res.status(400).json({ok: false});
       parseGData(gRes);
       res.json(gRes.data);
     });
