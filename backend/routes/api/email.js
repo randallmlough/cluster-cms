@@ -58,6 +58,9 @@ const parseGData = gRes => {
       data.body = gRes.data.payload.parts[0].body.data;
       data.formattedBody = gRes.data.payload.parts[1].body.data;
       break;
+    case "text/html":
+      data.formattedBody = gRes.data.payload.body.data;
+      break;
     default:
       console.log(`ERROR: Unknown type ${gRes.data.payload.mimeType}`);
       break;
