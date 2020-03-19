@@ -4,7 +4,7 @@ const validText = require("./valid_text");
 module.exports = function validateEmailInput(data) {
   let errors = {};
 
-  ["to", "subject", "text"].forEach(p => 
+  ["to", "subject", "body"].forEach(p => 
     data[p] = validText(data[p]) ? data[p] : ''
   )
 
@@ -12,7 +12,7 @@ module.exports = function validateEmailInput(data) {
     errors.to = "To field is required";
   }
   
-  if (!Validator.isEmail(data.email)) {
+  if (!Validator.isEmail(data.to)) {
     errors.to = "To field is invalid";
   }
 

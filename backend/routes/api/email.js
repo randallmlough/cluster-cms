@@ -21,6 +21,31 @@ google.options({
   auth: oauth2Client
 });
 
+const parseGData = gRes => {
+  let data = gRes.data.payload.body.data;
+  
+  if (data) {
+    gRes.data.payload.body.data = 
+      Buffer.from(data, "base64").toString("ascii");
+  } else {
+    parseGParts(gRes.data.payload.parts);
+  }
+
+  return gRes;
+};
+
+const parseGParts = parts => {
+  parts.forEach(p => {
+    if (p.body.size === 0) {
+      parseGParts(p.parts);
+    } else {
+      if (!p.body.data) return;
+      let newData = Buffer.from(p.body.data, "base64").toString("ascii");
+      p.body.data = newData;
+    }
+  });
+}
+
 router.use(
   passport.authenticate('jwt', {session: false}),
   (req, res, next) => {
@@ -43,9 +68,9 @@ router.get("/",
       userId: req.user.gmailId
     };
 
-    if (req.params.query) params.q = req.params.query;
-    if (req.params.nextPageToken) params.pageToken = req.params.nextPageToken;
-
+    if (req.query.q) params.q = req.query.q;
+    if (req.query.nextPageToken) params.pageToken = req.query.nextPageToken;
+    
     Contact.find({
       ownerId: req.user.id
     })
@@ -66,7 +91,8 @@ router.get("/",
         const gmail = google.gmail({version: "v1", oauth2Client});
         gmail.users.messages.list(params, (err, gRes) => {
           if (err) return console.log(err);
-          res.json(gRes.data);
+          if (gRes.data.resultSizeEstimate === 0) return res.json([]);
+          res.json(gRes.data.messages);
         });
       })
       .catch(err => {
@@ -86,21 +112,7 @@ router.get("/:id",
     const gmail = google.gmail({version: "v1", oauth2Client});
     gmail.users.messages.get(params, (err, gRes) => {
       if (err) return console.log(err);
-      
-      let data = gRes.data.payload.body.data,
-        newPayload = [];
-      
-      if (data) {
-        gRes.data.payload.body.data = 
-          Buffer.from(data, "base64").toString("ascii");
-      } else {
-        gRes.data.payload.parts.forEach(p => {
-          let newData = Buffer.from(p.body.data, "base64").toString("ascii");
-          newPayload.push(newData);
-        })
-        gRes.data.payload.parts = newPayload;
-      }
-
+      parseGData(gRes);
       res.json(gRes.data);
     });
 });
@@ -111,9 +123,9 @@ router.post("/",
     if (!isValid) return res.status(400).json(errors);
 
     const mailOptions = {
-      to: req.body.email.to,
-      subject: req.body.email.subject,
-      text: req.body.email.body
+      to: req.body.to,
+      subject: req.body.subject,
+      text: req.body.body
     },
       mail = new MailComposer(mailOptions),
       params = {
@@ -127,7 +139,13 @@ router.post("/",
       const gmail = google.gmail({version: "v1", oauth2Client});
       gmail.users.messages.send(params, (err, gRes) => {
         if (err) return console.log(err);
-        res.json({msg: "ok"});
+        gmail.users.messages.get({
+          userId: req.user.gmailId,
+          id: gRes.data.id
+        }, (err, gRes) => {
+          parseGData(gRes);
+          res.json(gRes.data);
+        })
       });
     });
   }

@@ -1,7 +1,5 @@
 import React from "react";
-import { connect, useDispatch } from "react-redux";
-import { fetchEmail, fetchEmails, sendEmail } from "../api"
-import { createContact } from '../actions'
+import { connect } from "react-redux";
 
 const Dashboard = props => {
   return (

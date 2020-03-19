@@ -5,9 +5,9 @@ export const fetchEmail = async id =>
   await emailAPI.get(`/${id}`);
 
 export const fetchEmails = async args => {
-  const path = "/?";
+  let path = "/?";
   if (args) {
-    for (let p of args) {
+    for (let p in args) {
       path += `${p}=${args[p]}&`
     }
   }
