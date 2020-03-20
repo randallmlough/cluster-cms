@@ -18,7 +18,16 @@ const NewEmail = props => {
   };
   const [isOpen, setIsOpen] = useState(true);
   const [message, setMessage] = useState(initialState);
-  const form = useRef();
+
+  const editorReference = useRef(null);
+
+  const setEditorReference = ref => {
+    editorReference.current = ref;
+  };
+
+  useEffect(() => {
+    if (editorReference) editorReference.current.focus();
+  }, [editorReference]);
 
   useEffect(() => {
     if (contact && contact.email) setMessage({ ...message, to: contact.email });
@@ -61,7 +70,7 @@ const NewEmail = props => {
       {isOpen && (
         <>
           <section className="bg-white">
-            <form ref={form}>
+            <form>
               <div className="border-b border-gray-300 px-5 pt-2 pb-1">
                 <div className="flex justify-between">
                   <label className="-mx-2">
@@ -110,10 +119,12 @@ const NewEmail = props => {
               <div>
                 <Editor
                   editorState={editorState}
+                  editorRef={setEditorReference}
                   onEditorStateChange={setEditorState}
                   toolbarClassName="text-xs"
                   wrapperClassName="demo-wrapper"
                   editorClassName="px-4 h-48"
+                  placeholder="Write something insightful"
                   toolbar={{
                     options: [
                       'inline',
