@@ -4,12 +4,14 @@ const { google } = require('googleapis');
 const passport = require('passport');
 const Contact = require('../../models/Contact');
 const MailComposer = require('nodemailer/lib/mail-composer');
+const { ErrorReporting } = require('@google-cloud/error-reporting');
 
 const validateEmailInput = require('../../validation/email');
 
 const clientId = require('../../config/keys').google.clientId,
   clientSecret = require('../../config/keys').google.clientSecret,
-  redirectUrl = require('../../config/keys').google.redirectUrl;
+  redirectUrl = require('../../config/keys').google.redirectUrl,
+  credentials = require('../../config/keys').google.credentials;
 
 const oauth2Client = new google.auth.OAuth2(
   clientId,
@@ -21,18 +23,25 @@ google.options({
   auth: oauth2Client,
 });
 
+const errors = new ErrorReporting({
+  credentials,
+  reportMode: "always",
+  projectId: "aa-cluster-cms"
+});
+
 const parseGData = gRes => {
   let data = gRes.data.payload.body.data;
 
-  if (data) {
+  if (data !== undefined) {
     gRes.data.payload.body.data = Buffer.from(data, 'base64').toString('ascii');
   } else {
     parseGParts(gRes.data.payload.parts);
   }
 
-  data = {};
-
-  data.id = gRes.data.id;
+  data = {
+    id: gRes.data.id,
+    labels: gRes.data.labelIds
+  };
 
   gRes.data.payload.headers
     .filter(h => ['Date', 'From', 'To', 'Subject'].includes(h.name))
@@ -40,7 +49,6 @@ const parseGData = gRes => {
       data[h.name.toLowerCase()] = h.value;
     });
 
-  data.labels = gRes.data.labelIds;
 
   switch (gRes.data.payload.mimeType) {
     case 'text/plain':
@@ -53,8 +61,15 @@ const parseGData = gRes => {
         (data.formattedBody = gRes.data.payload.parts[0].parts[1].body.data));
       break;
     case 'multipart/alternative':
-      data.body = gRes.data.payload.parts[0].body.data;
-      data.formattedBody = gRes.data.payload.parts[1].body.data;
+      if (gRes.data.payload.parts[0].mimeType === "text/plain") {
+        data.body = gRes.data.payload.parts[0].body.data;
+        data.formattedBody = gRes.data.payload.parts[1].body.data;
+      } else {
+        data.formattedBody = gRes.data.payload.parts[0].body.data;
+      }
+      break;
+    case "text/html":
+      data.formattedBody = gRes.data.payload.body.data;
       break;
     case "text/html":
       data.formattedBody = gRes.data.payload.body.data;
@@ -191,14 +206,14 @@ router.post('/schedule', (req, res) => {
   const { gmailId, accessToken, refreshToken } = req.user;
 
   const payload = {
-    to_email: to,
-    subject: subject,
+    to,
+    subject,
     text: body,
     gmail_id: gmailId,
     access_token: accessToken,
-    refresh_token: refreshToken,
+    refresh_token: refreshToken
   };
-  createHttpTaskWithToken(payload, new Date(new Date().getTime() + 60000)).then(
+  createHttpTaskWithToken(payload, date).then(
     resp => {
       res.json(resp);
     }
@@ -207,20 +222,23 @@ router.post('/schedule', (req, res) => {
 
 const MAX_SCHEDULE_LIMIT = 30 * 60 * 60 * 24;
 
-const createHttpTaskWithToken = function(
+const createHttpTaskWithToken = async function(
   payload = 'Hello, World!', // The task HTTP request body
   date = new Date(), // Intended date to schedule task
   project = 'aa-cluster-cms', // Your GCP Project id
-  queue = 'aa-cluster-cms', // Name of your Queue
+  queue = 'cluster-cms-tasks', // Name of your Queue
   location = 'us-central1', // The GCP region of your queue
-  url = 'https://us-central1-aa-cluster-cms.cloudfunctions.net/cluster-email-sender ', // The full url path that the request will be sent to
-  email = 'email-scheduler@aa-cluster-cms.iam.gserviceaccount.com ' // Cloud IAM service account
+  url = 'https://us-central1-aa-cluster-cms.cloudfunctions.net/cluster-email-sender', // The full url path that the request will be sent to
+  email = 'email-scheduler@aa-cluster-cms.iam.gserviceaccount.com' // Cloud IAM service account
 ) {
   // Imports the Google Cloud Tasks library.
   const { v2beta3 } = require('@google-cloud/tasks');
 
   // Instantiates a client.
-  const client = new v2beta3.CloudTasksClient();
+  const client = new v2beta3.CloudTasksClient({
+    credentials
+  });
+
   // Construct the fully qualified queue name.
   const parent = client.queuePath(project, location, queue);
   console.log('PARENT', parent);
@@ -233,13 +251,10 @@ const createHttpTaskWithToken = function(
     httpRequest: {
       httpMethod: 'POST',
       url,
-      oidcToken: {
-        serviceAccountEmail: email,
-      },
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body,
+      body
     },
   };
 
@@ -273,6 +288,7 @@ const createHttpTaskWithToken = function(
     return response.name;
   } catch (error) {
     // Construct error for Stackdriver Error Reporting
+    errors.report(error);
     console.error(Error(error.message));
   }
 };
