@@ -4,7 +4,6 @@ import { Icon } from '../../components/UI';
 import ContactSidebar from './ContactSidebar';
 import ContactFeed from './ContactFeed';
 import { getContact } from '../../actions';
-import NewEmail from './Form/NewEmail';
 
 const ContactShowView = props => {
   const { contact = {}, getContact } = props;
@@ -15,9 +14,6 @@ const ContactShowView = props => {
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    console.log('CONTACT', contact);
-  });
   if (loading) return null;
   return (
     <main className="md:grid md:grid-cols-4 min-h-screen">
@@ -25,8 +21,7 @@ const ContactShowView = props => {
         <ContactSidebar contact={contact} />
       </aside>
       <section className="bg-gray-200 col-span-2 py-5 relative">
-        <ContactFeed />
-        <NewEmail contact={contact} />
+        <ContactFeed contact={contact} />
       </section>
       <aside className="col-span-1 border-l border-gray-400">
         right sidebar

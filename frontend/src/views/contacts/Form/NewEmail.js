@@ -6,22 +6,22 @@ import { Editor } from 'react-draft-wysiwyg';
 import draftToHtml from 'draftjs-to-html';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { createEmail } from '../../../actions';
+import { connect } from 'react-redux';
 
 const NewEmail = props => {
-  const { contact } = props;
+  const { contact, createEmail, close } = props;
   const initialState = {
-    email: '',
+    to: '',
     subject: '',
     body: '',
     date: new Date(),
   };
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const [message, setMessage] = useState(initialState);
   const form = useRef();
 
   useEffect(() => {
-    if (contact && contact.email)
-      setMessage({ ...message, email: contact.email });
+    if (contact && contact.email) setMessage({ ...message, to: contact.email });
   }, [contact.email]);
 
   const [editorState, setEditorState] = React.useState(
@@ -30,11 +30,13 @@ const NewEmail = props => {
 
   const handleSubmit = e => {
     e.preventDefault();
-    console.log('MESSAGE', {
+    const email = {
       ...message,
       body: draftToHtml(convertToRaw(editorState.getCurrentContent())),
+    };
+    createEmail(email).then(() => {
+      close();
     });
-    // createEmail(message)
   };
 
   const handleSendDate = date => {
@@ -53,7 +55,7 @@ const NewEmail = props => {
       >
         <div>Create Email</div>
         <div>
-          <span>X</span>
+          <button onClick={() => close()}>X</button>
         </div>
       </header>
       {isOpen && (
@@ -69,9 +71,9 @@ const NewEmail = props => {
                     <input
                       className="text-secondary-500 text-sm px-2 border border-transparent focus:border-secondary-200 focus:outline-none"
                       type="text"
-                      value={message.email}
+                      value={message.to}
                       onChange={e =>
-                        setMessage({ ...message, email: e.target.value })
+                        setMessage({ ...message, to: e.target.value })
                       }
                     />
                   </label>
@@ -178,4 +180,8 @@ const NewEmail = props => {
   );
 };
 
-export default NewEmail;
+const mapDispatchToProps = dispatch => ({
+  createEmail: async email => await dispatch(createEmail(email)),
+});
+
+export default connect(null, mapDispatchToProps)(NewEmail);
