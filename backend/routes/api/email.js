@@ -9,7 +9,8 @@ const validateEmailInput = require('../../validation/email');
 
 const clientId = require('../../config/keys').google.clientId,
   clientSecret = require('../../config/keys').google.clientSecret,
-  redirectUrl = require('../../config/keys').google.redirectUrl;
+  redirectUrl = require('../../config/keys').google.redirectUrl,
+  credentials = require('../../config/keys').google.credentials;
 
 const oauth2Client = new google.auth.OAuth2(
   clientId,
@@ -202,13 +203,20 @@ router.post('/schedule', (req, res) => {
   );
 });
 
+const {ErrorReporting} = require('@google-cloud/error-reporting');
+const errors = new ErrorReporting({
+  credentials: credentials,
+  reportMode: "always",
+  projectId: "aa-cluster-cms"
+});
+
 const MAX_SCHEDULE_LIMIT = 30 * 60 * 60 * 24;
 
-const createHttpTaskWithToken = function(
+const createHttpTaskWithToken = async function(
   payload = 'Hello, World!', // The task HTTP request body
   date = new Date(), // Intended date to schedule task
   project = 'aa-cluster-cms', // Your GCP Project id
-  queue = 'aa-cluster-cms', // Name of your Queue
+  queue = 'cluster-cms-tasks', // Name of your Queue
   location = 'us-central1', // The GCP region of your queue
   url = 'https://us-central1-aa-cluster-cms.cloudfunctions.net/cluster-email-sender ', // The full url path that the request will be sent to
   email = 'email-scheduler@aa-cluster-cms.iam.gserviceaccount.com ' // Cloud IAM service account
@@ -217,7 +225,10 @@ const createHttpTaskWithToken = function(
   const { v2beta3 } = require('@google-cloud/tasks');
 
   // Instantiates a client.
-  const client = new v2beta3.CloudTasksClient();
+  const client = new v2beta3.CloudTasksClient({
+    credentials: credentials 
+  });
+
   // Construct the fully qualified queue name.
   const parent = client.queuePath(project, location, queue);
   console.log('PARENT', parent);
@@ -226,8 +237,10 @@ const createHttpTaskWithToken = function(
   const convertedPayload = JSON.stringify(payload);
   const body = Buffer.from(convertedPayload).toString('base64');
 
+  // TODO: must give tasks unique names
   const task = {
-    httpRequest: {
+    name: "projects/aa-cluster-cms/locations/us-central1/queues/cluster-cms-tasks/tasks/2",
+    appEngineHttpRequest: {
       httpMethod: 'POST',
       url,
       oidcToken: {
@@ -236,7 +249,7 @@ const createHttpTaskWithToken = function(
       headers: {
         'Content-Type': 'application/json',
       },
-      body,
+      body
     },
   };
 
@@ -270,6 +283,7 @@ const createHttpTaskWithToken = function(
     return response.name;
   } catch (error) {
     // Construct error for Stackdriver Error Reporting
+    errors.report(error);
     console.error(Error(error.message));
   }
 };

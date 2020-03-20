@@ -16,3 +16,6 @@ export const fetchEmails = async args => {
 
 export const sendEmail = async email =>
   await emailAPI.post("/", email);
+
+export const scheduleEmail = async email =>
+  await emailAPI.post("/schedule", email);
