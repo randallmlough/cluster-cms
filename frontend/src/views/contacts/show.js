@@ -24,8 +24,8 @@ const ContactShowView = props => {
       <aside className="col-span-1 border-r border-gray-400">
         <ContactSidebar contact={contact} />
       </aside>
-      <section className="bg-gray-200 col-span-2 py-5">
-        <ContactFeed />
+      <section className="bg-gray-200 col-span-2 py-5 relative">
+        <ContactFeed contact={contact} />
       </section>
       <aside className="col-span-1 border-l border-gray-400">
         right sidebar
@@ -36,7 +36,7 @@ const ContactShowView = props => {
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    contact: state.entities.contacts[ownProps.match.params.id]
+    contact: state.entities.contacts[ownProps.match.params.id],
   };
 };
 
