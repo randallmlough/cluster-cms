@@ -4,6 +4,7 @@ const { google } = require('googleapis');
 const passport = require('passport');
 const Contact = require('../../models/Contact');
 const MailComposer = require('nodemailer/lib/mail-composer');
+const { ErrorReporting } = require('@google-cloud/error-reporting');
 
 const validateEmailInput = require('../../validation/email');
 
@@ -22,18 +23,25 @@ google.options({
   auth: oauth2Client,
 });
 
+const errors = new ErrorReporting({
+  credentials,
+  reportMode: "always",
+  projectId: "aa-cluster-cms"
+});
+
 const parseGData = gRes => {
   let data = gRes.data.payload.body.data;
 
-  if (data) {
+  if (data !== undefined) {
     gRes.data.payload.body.data = Buffer.from(data, 'base64').toString('ascii');
   } else {
     parseGParts(gRes.data.payload.parts);
   }
 
-  data = {};
-
-  data.id = gRes.data.id;
+  data = {
+    id: gRes.data.id,
+    labels: gRes.data.labelIds
+  };
 
   gRes.data.payload.headers
     .filter(h => ['Date', 'From', 'To', 'Subject'].includes(h.name))
@@ -41,7 +49,6 @@ const parseGData = gRes => {
       data[h.name.toLowerCase()] = h.value;
     });
 
-  data.labels = gRes.data.labelIds;
 
   switch (gRes.data.payload.mimeType) {
     case 'text/plain':
@@ -54,8 +61,15 @@ const parseGData = gRes => {
         (data.formattedBody = gRes.data.payload.parts[0].parts[1].body.data));
       break;
     case 'multipart/alternative':
-      data.body = gRes.data.payload.parts[0].body.data;
-      data.formattedBody = gRes.data.payload.parts[1].body.data;
+      if (gRes.data.payload.parts[0].mimeType === "text/plain") {
+        data.body = gRes.data.payload.parts[0].body.data;
+        data.formattedBody = gRes.data.payload.parts[1].body.data;
+      } else {
+        data.formattedBody = gRes.data.payload.parts[0].body.data;
+      }
+      break;
+    case "text/html":
+      data.formattedBody = gRes.data.payload.body.data;
       break;
     default:
       console.log(`ERROR: Unknown type ${gRes.data.payload.mimeType}`);
@@ -201,13 +215,6 @@ router.post('/schedule', (req, res) => {
       res.json(resp);
     }
   );
-});
-
-const {ErrorReporting} = require('@google-cloud/error-reporting');
-const errors = new ErrorReporting({
-  credentials,
-  reportMode: "always",
-  projectId: "aa-cluster-cms"
 });
 
 const MAX_SCHEDULE_LIMIT = 30 * 60 * 60 * 24;
