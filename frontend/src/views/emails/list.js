@@ -1,27 +1,33 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
-import { Icon } from "../../components/UI";
+import EmailContainer from "./Email";
 
 const EmailsListView = props => {
-  const { emails } = props;
+  const { emails } = props,
+    [emailIds, setEmailIds] = useState([]),
+    [currentPage, setCurrentPage] = useState(1),
+    [currentEmails, setCurrentEmails] = useState(emailIds.slice(0,5));
+
+  useEffect(() => {
+    let ids = Object.keys(emails);
+    setEmailIds(ids);
+  }, [Object.keys(emails).length]);
+
+  useEffect(() => {
+    let newCurrentEmails = [];
+    emailIds.slice(0,5).forEach(e => {
+      newCurrentEmails.push(emails[e]);
+    })
+    setCurrentEmails(newCurrentEmails);
+  }, [emailIds, emails]);
+  
+  if (currentEmails.length === 0) return null;
+
   return (<>
-    {Object.keys(emails).map(e => (
-      <div key={emails[e].id} className="shadow rounded bg-white p-5 mb-6">
-        <div className="flex justify-between mb-3">
-          <div>
-            <Icon icon="envelope" className="mr-4" />
-            <span className="font-bold text-sm">Logged Email</span>
-          </div>
-          <span className="text-xs">{emails[e].date}</span>
-        </div>
-        <div className="px-8">
-          <h3 className="font-bold mb-4">{emails[e].subject}</h3>
-          <p className="text-sm">
-            {emails[e].body}
-          </p>
-        </div>
-      </div>
+    {currentEmails.map(e => (
+      <EmailContainer email={e} key={e.id} />
     ))}
+    Prev Next
   </>)
 }
 

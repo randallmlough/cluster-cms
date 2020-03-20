@@ -23,14 +23,7 @@ const receiveEmailErrors = errors => ({
 
 export const getEmails = args => async dispatch =>
   await fetchEmails(args)
-    .then(resp => {
-      resp.data.forEach(e => {
-        dispatch(getEmail(e.id));
-        // fetchEmail(e.id)
-        //   .then(email => dispatch(receiveEmail(email.data)));
-      });
-      dispatch(receiveEmails(resp.data));
-    })
+    .then(resp => dispatch(receiveEmails(resp.data)))
     .catch(err => Promise.reject(formatError(err)));
 
 export const getEmail = id => async dispatch =>

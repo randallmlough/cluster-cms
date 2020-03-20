@@ -33,14 +33,15 @@ const parseGData = gRes => {
   let data = gRes.data.payload.body.data;
 
   if (data !== undefined) {
-    gRes.data.payload.body.data = Buffer.from(data, 'base64').toString('ascii');
+    gRes.data.payload.body.data = Buffer.from(data, 'base64').toString('utf-8');
   } else {
     parseGParts(gRes.data.payload.parts);
   }
 
   data = {
     id: gRes.data.id,
-    labels: gRes.data.labelIds
+    labels: gRes.data.labelIds,
+    snippet: gRes.data.snippet
   };
 
   gRes.data.payload.headers
@@ -89,7 +90,7 @@ const parseGParts = parts => {
       parseGParts(p.parts);
     } else {
       if (!p.body.data) return;
-      let newData = Buffer.from(p.body.data, 'base64').toString('ascii');
+      let newData = Buffer.from(p.body.data, 'base64').toString('utf-8');
       p.body.data = newData;
     }
   });
