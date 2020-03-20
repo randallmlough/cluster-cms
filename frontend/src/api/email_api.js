@@ -20,13 +20,9 @@ export const fetchEmails = async args => {
 }
 
 /*
- * email: {to, subject, body}
+ * email: {to, subject, body, ?date}
 */
 export const sendEmail = async email =>
-  await emailAPI.post("/", email);
-
-/*
- * email: {to, subject, body, date}
-*/
-export const scheduleEmail = async email =>
-  await emailAPI.post("/schedule", email);
+  email.date
+    ? await emailAPI.post("/schedule", email)
+    : await emailAPI.post("/", email);
