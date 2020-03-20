@@ -13,6 +13,7 @@
     "@testing-library/user-event": "^7.1.2",
     "autoprefixer": "^9.7.4",
     "axios": "^0.19.2",
+    "dompurify": "^2.0.8",
     "humps": "^2.0.1",
     "jwt-decode": "^2.2.0",
     "postcss-cli": "^7.1.0",
