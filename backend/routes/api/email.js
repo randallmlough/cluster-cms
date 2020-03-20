@@ -189,14 +189,14 @@ router.post('/schedule', (req, res) => {
   const { gmailId, accessToken, refreshToken } = req.user;
 
   const payload = {
-    to_email: to,
-    subject: subject,
+    to,
+    subject,
     text: body,
     gmail_id: gmailId,
     access_token: accessToken,
-    refresh_token: refreshToken,
+    refresh_token: refreshToken
   };
-  createHttpTaskWithToken(payload, new Date(new Date().getTime() + 60000)).then(
+  createHttpTaskWithToken(payload, date).then(
     resp => {
       res.json(resp);
     }
@@ -205,7 +205,7 @@ router.post('/schedule', (req, res) => {
 
 const {ErrorReporting} = require('@google-cloud/error-reporting');
 const errors = new ErrorReporting({
-  credentials: credentials,
+  credentials,
   reportMode: "always",
   projectId: "aa-cluster-cms"
 });
@@ -218,15 +218,15 @@ const createHttpTaskWithToken = async function(
   project = 'aa-cluster-cms', // Your GCP Project id
   queue = 'cluster-cms-tasks', // Name of your Queue
   location = 'us-central1', // The GCP region of your queue
-  url = 'https://us-central1-aa-cluster-cms.cloudfunctions.net/cluster-email-sender ', // The full url path that the request will be sent to
-  email = 'email-scheduler@aa-cluster-cms.iam.gserviceaccount.com ' // Cloud IAM service account
+  url = 'https://us-central1-aa-cluster-cms.cloudfunctions.net/cluster-email-sender', // The full url path that the request will be sent to
+  email = 'email-scheduler@aa-cluster-cms.iam.gserviceaccount.com' // Cloud IAM service account
 ) {
   // Imports the Google Cloud Tasks library.
   const { v2beta3 } = require('@google-cloud/tasks');
 
   // Instantiates a client.
   const client = new v2beta3.CloudTasksClient({
-    credentials: credentials 
+    credentials
   });
 
   // Construct the fully qualified queue name.
@@ -237,17 +237,12 @@ const createHttpTaskWithToken = async function(
   const convertedPayload = JSON.stringify(payload);
   const body = Buffer.from(convertedPayload).toString('base64');
 
-  // TODO: must give tasks unique names
   const task = {
-    name: "projects/aa-cluster-cms/locations/us-central1/queues/cluster-cms-tasks/tasks/2",
-    appEngineHttpRequest: {
+    httpRequest: {
       httpMethod: 'POST',
       url,
-      oidcToken: {
-        serviceAccountEmail: email,
-      },
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
       body
     },
