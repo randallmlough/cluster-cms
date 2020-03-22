@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
-const uri = require('./backend/config/keys').mongoURI;
+const uri =
+  process.env.MONGODB_URI || require('./backend/config/keys').mongoURI;
 const User = require('./backend/models/User');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -12,7 +13,7 @@ const contacts = require('./backend/routes/api/contacts');
 const email = require('./backend/routes/api/email');
 
 mongoose
-  .connect(process.env.MONGODB_URI || uri, { useNewUrlParser: true })
+  .connect(uri, { useNewUrlParser: true })
   .then(() => console.log('Connected to MongoDB successfully'))
   .catch(err => console.log(err));
 
