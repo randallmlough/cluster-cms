@@ -4,17 +4,13 @@ const jwt = require('jsonwebtoken');
 const { google } = require('googleapis');
 const User = require('../../models/User');
 
-const clientId =
-    process.env.GOOGLE_CLIENT_ID ||
-    require('../../config/keys').google.clientId,
-  clientSecret =
-    process.env.GOOGLE_CLIENT_SECRET ||
-    require('../../config/keys').google.clientSecret,
-  redirectUrl =
-    process.env.GOOGLE_REDIRECT_URL ||
-    require('../../config/keys').google.redirectUrl;
-secretOrKey =
-  process.env.JWT_SECRET || require('../../config/keys').secretOrKey;
+const { jwtSecret } = require('../../config/config');
+
+const {
+  clientId,
+  clientSecret,
+  redirectUrl,
+} = require('../../config/config').google;
 
 const scopes = [
   'https://www.googleapis.com/auth/userinfo.email',
@@ -41,7 +37,7 @@ const signJWT = u => {
     gmailId: u.gmailId,
   };
 
-  return jwt.sign(payload, process.env.JWT_SECRET || secretOrKey, {
+  return jwt.sign(payload, jwtSecret, {
     expiresIn: 3600,
   });
 };

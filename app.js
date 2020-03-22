@@ -1,7 +1,5 @@
 const express = require('express');
 const app = express();
-const uri =
-  process.env.MONGODB_URI || require('./backend/config/keys').mongoURI;
 const User = require('./backend/models/User');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -12,8 +10,10 @@ const oauth = require('./backend/routes/api/oauth');
 const contacts = require('./backend/routes/api/contacts');
 const email = require('./backend/routes/api/email');
 
+const { port, mongoURI } = require('./backend/config/config');
+
 mongoose
-  .connect(uri, { useNewUrlParser: true })
+  .connect(mongoURI, { useNewUrlParser: true })
   .then(() => console.log('Connected to MongoDB successfully'))
   .catch(err => console.log(err));
 
@@ -38,5 +38,4 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Server is running on port ${port}`));

@@ -8,33 +8,13 @@ const { ErrorReporting } = require('@google-cloud/error-reporting');
 
 const validateEmailInput = require('../../validation/email');
 
-const clientId =
-    process.env.GOOGLE_CLIENT_ID ||
-    require('../../config/keys').google.clientId,
-  clientSecret =
-    process.env.GOOGLE_CLIENT_SECRET ||
-    require('../../config/keys').google.clientSecret,
-  redirectUrl =
-    process.env.GOOGLE_REDIRECT_URL ||
-    require('../../config/keys').google.redirectUrl;
+const {
+  clientId,
+  clientSecret,
+  redirectUrl,
+  credentials,
+} = require('../../config/config').google;
 
-let credentials;
-if (process.env.NODE_ENV === 'production') {
-  credentials = {
-    type: process.env.GOOGLE_CRED_TYPE,
-    project_id: process.env.GOOGLE_CRED_PROJECT_ID,
-    private_key_id: process.env.GOOGLE_CRED_PRIVATE_KEY_ID,
-    private_key: process.env.GOOGLE_CRED_PRIVATE_KEY,
-    client_email: process.env.GOOGLE_CRED_CLIENT_EMAIL,
-    client_id: process.env.GOOGLE_CRED_CLIENT_ID,
-    auth_uri: process.env.GOOGLE_CRED_AUTH_URI,
-    token_uri: process.env.GOOGLE_CRED_TOKEN_URI,
-    auth_provider_x509_cert_url: process.env.GOOGLE_CRED_AUTH_CERT_URL,
-    client_x509_cert_url: process.env.GOOGLE_CRED_TYPE_CLIENT_CERT_URL,
-  };
-} else {
-  credentials = require('../../config/keys').google.credentials;
-}
 const oauth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,

@@ -3,8 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
-const secret =
-  process.env.JWT_SECRET || require('../../config/keys').secretOrKey;
+const { jwtSecret } = require('../../config/config');
 const passport = require('passport');
 
 const validateRegisterInput = require('../../validation/register');
@@ -52,7 +51,7 @@ router.post('/register', (req, res) => {
                 email: response.email,
               };
 
-              user.token = jwt.sign(user, secret, { expiresIn: 3600 });
+              user.token = jwt.sign(user, jwtSecret, { expiresIn: 3600 });
               res.json(user);
             })
             .catch(err => console.log(err));
@@ -85,7 +84,7 @@ router.post('/login', (req, res) => {
 
         jwt.sign(
           payload,
-          secret,
+          jwtSecret,
           // Tell the key to expire in one hour
           { expiresIn: 3600 },
           (err, token) => {
