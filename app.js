@@ -11,6 +11,7 @@ const contacts = require('./backend/routes/api/contacts');
 const email = require('./backend/routes/api/email');
 
 const { port, mongoURI } = require('./backend/config/config');
+const path = require('path');
 
 mongoose
   .connect(mongoURI, { useNewUrlParser: true })
