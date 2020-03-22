@@ -3,12 +3,19 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
+  "engines": {
+    "node": "13.6.0",
+    "yarn": "1.22.0"
+  },
   "scripts": {
     "start": "node app",
     "server": "nodemon app.js",
     "frontend-install": "npm install --prefix frontend",
     "frontend": "npm start --prefix frontend",
-    "dev": "concurrently \"npm run server\" \"npm run frontend\""
+    "dev": "concurrently \"npm run server\" \"npm run frontend\"",
+    "build": "yarn --cwd frontend install && yarn --cwd frontend build:css && yarn --cwd frontend build",
+    "deploy": "cp -a frontend/build/. public/",
+    "heroku-postbuild": "yarn build && yarn deploy"
   },
   "author": "",
   "license": "ISC",

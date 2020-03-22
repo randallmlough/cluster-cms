@@ -6,19 +6,21 @@ const keys = require('./keys');
 
 const options = {};
 options.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-options.secretOrKey = keys.secretOrKey;
+options.secretOrKey = process.env.JWT_SECRET || keys.secretOrKey;
 
 module.exports = passport => {
-  passport.use(new JwtStrategy(options, (jwt_payload, done) => {
-    User.findById(jwt_payload.id)
-      .then(user => {
-        if (user) {
-          // return the user to the frontend
-          return done(null, user);
-        }
-        // return false since there is no user
-        return done(null, false);
-      })
-      .catch(err => console.log(err));
-  }));
+  passport.use(
+    new JwtStrategy(options, (jwt_payload, done) => {
+      User.findById(jwt_payload.id)
+        .then(user => {
+          if (user) {
+            // return the user to the frontend
+            return done(null, user);
+          }
+          // return false since there is no user
+          return done(null, false);
+        })
+        .catch(err => console.log(err));
+    })
+  );
 };

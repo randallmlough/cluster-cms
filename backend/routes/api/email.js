@@ -8,11 +8,33 @@ const { ErrorReporting } = require('@google-cloud/error-reporting');
 
 const validateEmailInput = require('../../validation/email');
 
-const clientId = require('../../config/keys').google.clientId,
-  clientSecret = require('../../config/keys').google.clientSecret,
-  redirectUrl = require('../../config/keys').google.redirectUrl,
-  credentials = require('../../config/keys').google.credentials;
+const clientId =
+    process.env.GOOGLE_CLIENT_ID ||
+    require('../../config/keys').google.clientId,
+  clientSecret =
+    process.env.GOOGLE_CLIENT_SECRET ||
+    require('../../config/keys').google.clientSecret,
+  redirectUrl =
+    process.env.GOOGLE_REDIRECT_URL ||
+    require('../../config/keys').google.redirectUrl;
 
+let credentials;
+if (process.env.NODE_ENV === 'production') {
+  credentials = {
+    type: process.env.GOOGLE_CRED_TYPE,
+    project_id: process.env.GOOGLE_CRED_PROJECT_ID,
+    private_key_id: process.env.GOOGLE_CRED_PRIVATE_KEY_ID,
+    private_key: process.env.GOOGLE_CRED_PRIVATE_KEY,
+    client_email: process.env.GOOGLE_CRED_CLIENT_EMAIL,
+    client_id: process.env.GOOGLE_CRED_CLIENT_ID,
+    auth_uri: process.env.GOOGLE_CRED_AUTH_URI,
+    token_uri: process.env.GOOGLE_CRED_TOKEN_URI,
+    auth_provider_x509_cert_url: process.env.GOOGLE_CRED_AUTH_CERT_URL,
+    client_x509_cert_url: process.env.GOOGLE_CRED_TYPE_CLIENT_CERT_URL,
+  };
+} else {
+  credentials = require('../../config/keys').google.credentials;
+}
 const oauth2Client = new google.auth.OAuth2(
   clientId,
   clientSecret,
@@ -25,8 +47,8 @@ google.options({
 
 const errors = new ErrorReporting({
   credentials,
-  reportMode: "always",
-  projectId: "aa-cluster-cms"
+  reportMode: 'always',
+  projectId: 'aa-cluster-cms',
 });
 
 const parseGData = gRes => {
@@ -40,7 +62,7 @@ const parseGData = gRes => {
 
   data = {
     id: gRes.data.id,
-    labels: gRes.data.labelIds
+    labels: gRes.data.labelIds,
   };
 
   gRes.data.payload.headers
@@ -48,7 +70,6 @@ const parseGData = gRes => {
     .forEach(h => {
       data[h.name.toLowerCase()] = h.value;
     });
-
 
   switch (gRes.data.payload.mimeType) {
     case 'text/plain':
@@ -61,14 +82,14 @@ const parseGData = gRes => {
         (data.formattedBody = gRes.data.payload.parts[0].parts[1].body.data));
       break;
     case 'multipart/alternative':
-      if (gRes.data.payload.parts[0].mimeType === "text/plain") {
+      if (gRes.data.payload.parts[0].mimeType === 'text/plain') {
         data.body = gRes.data.payload.parts[0].body.data;
         data.formattedBody = gRes.data.payload.parts[1].body.data;
       } else {
         data.formattedBody = gRes.data.payload.parts[0].body.data;
       }
       break;
-    case "text/html":
+    case 'text/html':
       data.formattedBody = gRes.data.payload.body.data;
       break;
     default:
@@ -208,13 +229,11 @@ router.post('/schedule', (req, res) => {
     text: body,
     gmail_id: gmailId,
     access_token: accessToken,
-    refresh_token: refreshToken
+    refresh_token: refreshToken,
   };
-  createHttpTaskWithToken(payload, date).then(
-    resp => {
-      res.json(resp);
-    }
-  );
+  createHttpTaskWithToken(payload, date).then(resp => {
+    res.json(resp);
+  });
 });
 
 const MAX_SCHEDULE_LIMIT = 30 * 60 * 60 * 24;
@@ -233,7 +252,7 @@ const createHttpTaskWithToken = async function(
 
   // Instantiates a client.
   const client = new v2beta3.CloudTasksClient({
-    credentials
+    credentials,
   });
 
   // Construct the fully qualified queue name.
@@ -249,9 +268,9 @@ const createHttpTaskWithToken = async function(
       httpMethod: 'POST',
       url,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body
+      body,
     },
   };
 
