@@ -8,10 +8,12 @@ const { ErrorReporting } = require('@google-cloud/error-reporting');
 
 const validateEmailInput = require('../../validation/email');
 
-const clientId = require('../../config/keys').google.clientId,
-  clientSecret = require('../../config/keys').google.clientSecret,
-  redirectUrl = require('../../config/keys').google.redirectUrl,
-  credentials = require('../../config/keys').google.credentials;
+const {
+  clientId,
+  clientSecret,
+  redirectUrl,
+  credentials,
+} = require('../../config/config').google;
 
 const oauth2Client = new google.auth.OAuth2(
   clientId,
@@ -25,8 +27,8 @@ google.options({
 
 const errors = new ErrorReporting({
   credentials,
-  reportMode: "always",
-  projectId: "aa-cluster-cms"
+  reportMode: 'always',
+  projectId: 'aa-cluster-cms',
 });
 
 const parseGData = gRes => {
@@ -40,7 +42,7 @@ const parseGData = gRes => {
 
   data = {
     id: gRes.data.id,
-    labels: gRes.data.labelIds
+    labels: gRes.data.labelIds,
   };
 
   gRes.data.payload.headers
@@ -48,7 +50,6 @@ const parseGData = gRes => {
     .forEach(h => {
       data[h.name.toLowerCase()] = h.value;
     });
-
 
   switch (gRes.data.payload.mimeType) {
     case 'text/plain':
@@ -61,14 +62,14 @@ const parseGData = gRes => {
         (data.formattedBody = gRes.data.payload.parts[0].parts[1].body.data));
       break;
     case 'multipart/alternative':
-      if (gRes.data.payload.parts[0].mimeType === "text/plain") {
+      if (gRes.data.payload.parts[0].mimeType === 'text/plain') {
         data.body = gRes.data.payload.parts[0].body.data;
         data.formattedBody = gRes.data.payload.parts[1].body.data;
       } else {
         data.formattedBody = gRes.data.payload.parts[0].body.data;
       }
       break;
-    case "text/html":
+    case 'text/html':
       data.formattedBody = gRes.data.payload.body.data;
       break;
     default:
@@ -208,13 +209,11 @@ router.post('/schedule', (req, res) => {
     text: body,
     gmail_id: gmailId,
     access_token: accessToken,
-    refresh_token: refreshToken
+    refresh_token: refreshToken,
   };
-  createHttpTaskWithToken(payload, date).then(
-    resp => {
-      res.json(resp);
-    }
-  );
+  createHttpTaskWithToken(payload, date).then(resp => {
+    res.json(resp);
+  });
 });
 
 const MAX_SCHEDULE_LIMIT = 30 * 60 * 60 * 24;
@@ -233,7 +232,7 @@ const createHttpTaskWithToken = async function(
 
   // Instantiates a client.
   const client = new v2beta3.CloudTasksClient({
-    credentials
+    credentials,
   });
 
   // Construct the fully qualified queue name.
@@ -249,9 +248,9 @@ const createHttpTaskWithToken = async function(
       httpMethod: 'POST',
       url,
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body
+      body,
     },
   };
 
