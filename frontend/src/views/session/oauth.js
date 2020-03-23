@@ -14,8 +14,8 @@ class OAuthCallback extends React.Component {
       .then(res => {
         const token = res.data.token,
           session = decodeJWT(token);
+        saveSessionToken(token);
         dispatch(receiveUserSession(session));
-        saveSessionToken(token);  
       });
   }
 

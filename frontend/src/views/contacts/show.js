@@ -1,18 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import { Icon } from '../../components/UI';
-import ContactSidebar from './ContactSidebar';
-import ContactFeed from './ContactFeed';
-import { getContact } from '../../actions';
+import React, { useEffect, useState } from "react";
+import { connect } from "react-redux";
+import ContactSidebar from "./ContactSidebar";
+import ContactFeed from "./ContactFeed";
+import { getContact, getEmails } from "../../actions";
 
 const ContactShowView = props => {
-  const { contact = {}, getContact } = props;
+  const { contact = {}, getContact, getEmails } = props;
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     setLoading(true);
     getContact(props.match.params.id);
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    console.log("CONTACT", contact);
+    if (getEmails) getEmails();
+  });
 
   if (loading) return null;
   return (
@@ -38,6 +42,19 @@ const mapStateToProps = (state, ownProps) => {
 
 const mapDispatchToProps = dispatch => ({
   getContact: async contactId => await dispatch(getContact(contactId)),
+  getEmails: contact => async () => await dispatch(getEmails({
+    q: `{from:${contact.email} to:${contact.email}}`
+  }))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(ContactShowView);
+const mergeProps = (stateProps, dispatchProps, ownProps) => {
+  const props = Object.assign({}, stateProps, dispatchProps, ownProps);
+  if (stateProps.contact) {
+    props.getEmails = props.getEmails(stateProps.contact);
+  } else {
+    props.getEmails = undefined;
+  }
+  return props;
+};
+
+export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(ContactShowView);
