@@ -27,15 +27,15 @@ google.options({
 
 const errors = new ErrorReporting({
   credentials,
-  reportMode: 'always',
-  projectId: 'aa-cluster-cms',
+  reportMode: "always",
+  projectId: "aa-cluster-cms"
 });
 
 const parseGData = gRes => {
   let data = gRes.data.payload.body.data;
 
   if (data !== undefined) {
-    gRes.data.payload.body.data = Buffer.from(data, 'base64').toString('ascii');
+    gRes.data.payload.body.data = Buffer.from(data, 'base64').toString('utf-8');
   } else {
     parseGParts(gRes.data.payload.parts);
   }
@@ -43,6 +43,7 @@ const parseGData = gRes => {
   data = {
     id: gRes.data.id,
     labels: gRes.data.labelIds,
+    snippet: gRes.data.snippet
   };
 
   gRes.data.payload.headers
@@ -50,6 +51,7 @@ const parseGData = gRes => {
     .forEach(h => {
       data[h.name.toLowerCase()] = h.value;
     });
+
 
   switch (gRes.data.payload.mimeType) {
     case 'text/plain':
@@ -62,14 +64,17 @@ const parseGData = gRes => {
         (data.formattedBody = gRes.data.payload.parts[0].parts[1].body.data));
       break;
     case 'multipart/alternative':
-      if (gRes.data.payload.parts[0].mimeType === 'text/plain') {
+      if (gRes.data.payload.parts[0].mimeType === "text/plain") {
         data.body = gRes.data.payload.parts[0].body.data;
         data.formattedBody = gRes.data.payload.parts[1].body.data;
       } else {
         data.formattedBody = gRes.data.payload.parts[0].body.data;
       }
       break;
-    case 'text/html':
+    case "text/html":
+      data.formattedBody = gRes.data.payload.body.data;
+      break;
+    case "text/html":
       data.formattedBody = gRes.data.payload.body.data;
       break;
     default:
@@ -87,7 +92,7 @@ const parseGParts = parts => {
       parseGParts(p.parts);
     } else {
       if (!p.body.data) return;
-      let newData = Buffer.from(p.body.data, 'base64').toString('ascii');
+      let newData = Buffer.from(p.body.data, 'base64').toString('utf-8');
       p.body.data = newData;
     }
   });
@@ -168,7 +173,7 @@ router.post('/', (req, res) => {
   const mailOptions = {
       to: req.body.to,
       subject: req.body.subject,
-      text: req.body.body,
+      html: req.body.body,
     },
     mail = new MailComposer(mailOptions),
     params = {
@@ -206,14 +211,16 @@ router.post('/schedule', (req, res) => {
   const payload = {
     to,
     subject,
-    text: body,
+    html: body,
     gmail_id: gmailId,
     access_token: accessToken,
-    refresh_token: refreshToken,
+    refresh_token: refreshToken
   };
-  createHttpTaskWithToken(payload, date).then(resp => {
-    res.json(resp);
-  });
+  createHttpTaskWithToken(payload, date).then(
+    resp => {
+      res.json(resp);
+    }
+  );
 });
 
 const MAX_SCHEDULE_LIMIT = 30 * 60 * 60 * 24;
@@ -232,7 +239,7 @@ const createHttpTaskWithToken = async function(
 
   // Instantiates a client.
   const client = new v2beta3.CloudTasksClient({
-    credentials,
+    credentials
   });
 
   // Construct the fully qualified queue name.
@@ -248,9 +255,9 @@ const createHttpTaskWithToken = async function(
       httpMethod: 'POST',
       url,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
       },
-      body,
+      body
     },
   };
 
