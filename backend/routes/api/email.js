@@ -171,7 +171,7 @@ router.post('/', (req, res) => {
   const mailOptions = {
       to: req.body.to,
       subject: req.body.subject,
-      text: req.body.body,
+      html: req.body.body,
     },
     mail = new MailComposer(mailOptions),
     params = {
@@ -209,7 +209,7 @@ router.post('/schedule', (req, res) => {
   const payload = {
     to,
     subject,
-    text: body,
+    html: body,
     gmail_id: gmailId,
     access_token: accessToken,
     refresh_token: refreshToken
