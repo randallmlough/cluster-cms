@@ -4,6 +4,7 @@
 node_modules
 /.pnp
 .pnp.js
+package.json.lock
 
 # testing
 /coverage
@@ -23,6 +24,7 @@ yarn-debug.log*
 yarn-error.log*
 
 .history/
+public/
 
 # secrets
 keys.json

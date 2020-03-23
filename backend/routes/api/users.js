@@ -1,20 +1,22 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const User = require('../../models/User');
 const jwt = require('jsonwebtoken');
-const keys = require('../../config/keys');
+const { jwtSecret } = require('../../config/config');
 const passport = require('passport');
 
 const validateRegisterInput = require('../../validation/register');
-const validateLoginInput = require('../../validation/login');
-
-router.get('/current', passport.authenticate('jwt', {session: false}), (req, res) => {
-  res.json({
-    id: req.user.id,
-    email: req.user.email
-  });
-})
+router.get(
+  '/current',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    res.json({
+      id: req.user.id,
+      email: req.user.email,
+    });
+  }
+);
 
 router.post('/register', (req, res) => {
   const { errors, isValid } = validateRegisterInput(req.body);
@@ -24,41 +26,43 @@ router.post('/register', (req, res) => {
   }
 
   // Check to make sure nobody has already registered with a duplicate email
-  User.findOne({ email: req.body.email })
-    .then(user => {
-      if (user) {
-        // Throw a 400 error if the email address already exists
-        return res.status(400).json({email: "A user has already registered with this address"});
-      } else {
-        // Otherwise create a new user
-        const newUser = new User({
-          email: req.body.email,
-          password: req.body.password
+  User.findOne({ email: req.body.email }).then(user => {
+    if (user) {
+      // Throw a 400 error if the email address already exists
+      return res
+        .status(400)
+        .json({ email: 'A user has already registered with this address' });
+    } else {
+      // Otherwise create a new user
+      const newUser = new User({
+        email: req.body.email,
+        password: req.body.password,
+      });
+
+      bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.hash(newUser.password, salt, (err, hash) => {
+          if (err) throw err;
+          newUser.password = hash;
+          newUser
+            .save()
+            .then(response => {
+              let user = {
+                id: response._id,
+                email: response.email,
+              };
+
+              user.token = jwt.sign(user, jwtSecret, { expiresIn: 3600 });
+              res.json(user);
+            })
+            .catch(err => console.log(err));
         });
-
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(newUser.password, salt, (err, hash) => {
-            if (err) throw err;
-            newUser.password = hash;
-            newUser.save()
-              .then(response => {
-                let user = {
-                  id: response._id,
-                  email: response.email
-                }
-
-                user.token = jwt.sign(user, keys.secretOrKey, {expiresIn: 3600});
-                res.json(user);
-              })
-              .catch(err => console.log(err));
-          })
-        })
-      }
-    })
+      });
+    }
+  });
 });
 
 router.post('/login', (req, res) => {
-  const { errors, isValid } = validateLoginInput(req.body);
+  const { errors, isValid } = validateRegisterInput(req.body);
 
   console.log(errors);
 
@@ -69,32 +73,31 @@ router.post('/login', (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
 
-  User.findOne({email})
-    .then(user => {
-      if (!user) {
-        return res.status(404).json({email: 'This user does not exist'});
-      }
+  User.findOne({ email }).then(user => {
+    if (!user) {
+      return res.status(404).json({ email: 'This user does not exist' });
+    }
 
-      bcrypt.compare(password, user.password)
-        .then(isMatch => {
-          if (isMatch) {
-            const payload = {id: user.id, email: user.email};
+    bcrypt.compare(password, user.password).then(isMatch => {
+      if (isMatch) {
+        const payload = { id: user.id, email: user.email };
 
-            jwt.sign(
-              payload,
-              keys.secretOrKey,
-              // Tell the key to expire in one hour
-              {expiresIn: 3600},
-              (err, token) => {
-              res.json({
-                token: token
-              });
+        jwt.sign(
+          payload,
+          jwtSecret,
+          // Tell the key to expire in one hour
+          { expiresIn: 3600 },
+          (err, token) => {
+            res.json({
+              token: token,
             });
-          } else {
-            return res.status(400).json({password: 'Incorrect password'});
           }
-        })
-    })
+        );
+      } else {
+        return res.status(400).json({ password: 'Incorrect password' });
+      }
+    });
+  });
 });
 
 module.exports = router;

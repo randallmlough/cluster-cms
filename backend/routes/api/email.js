@@ -8,10 +8,12 @@ const { ErrorReporting } = require('@google-cloud/error-reporting');
 
 const validateEmailInput = require('../../validation/email');
 
-const clientId = require('../../config/keys').google.clientId,
-  clientSecret = require('../../config/keys').google.clientSecret,
-  redirectUrl = require('../../config/keys').google.redirectUrl,
-  credentials = require('../../config/keys').google.credentials;
+const {
+  clientId,
+  clientSecret,
+  redirectUrl,
+  credentials,
+} = require('../../config/config').google;
 
 const oauth2Client = new google.auth.OAuth2(
   clientId,
