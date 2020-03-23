@@ -10,7 +10,7 @@ const oauth = require('./backend/routes/api/oauth');
 const contacts = require('./backend/routes/api/contacts');
 const email = require('./backend/routes/api/email');
 
-const { port, mongoURI } = require('./backend/config/config');
+const { mongoURI } = require('./backend/config/config');
 const path = require('path');
 
 mongoose
@@ -36,5 +36,5 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
 }
-
+const port = process.env.PORT || 5000;
 app.listen(port, () => console.log(`Server is running on port ${port}`));
